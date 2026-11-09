@@ -24,7 +24,7 @@ phases:
       - echo build completed
 
 artifacts:
-  base-directory: dist
   files:
-    - '**/*'
-    - 'appspec.yml'
+    - dist/shop/
+    - dist/shop/assets/
+    - appspec.yml
