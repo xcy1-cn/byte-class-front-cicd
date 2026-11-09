@@ -27,3 +27,4 @@ artifacts:
   base-directory: dist
   files:
     - '**/*'
+    - 'appspec.yml'
