@@ -1,0 +1,29 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 16
+    commands:
+      - echo installing dependencies ...
+      - npm i
+
+  pre_build:
+    commands:
+      - waiting
+      - ls -l
+
+  build:
+    commands:
+      - echo build started
+      - npm run build
+
+  post_build:
+    commands:
+      - ls -l
+      - echo build completed
+
+artifacts:
+  base-directory: dist
+  files:
+    - '**/*'
