@@ -1,0 +1,37 @@
+version: 0.2
+
+env:
+  shell: bash
+  variables:
+    ECS_CONTAINER_NAME: frontend
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 22
+    commands:
+      - npm ci
+
+  build:
+    commands:
+      - |
+        set -euo pipefail
+        : "${ECR_REPOSITORY_URI:?Set ECR_REPOSITORY_URI in CodeBuild}"
+
+        NODE_OPTIONS=--openssl-legacy-provider npm run build
+        test -f dist/shop/index.html
+
+        IMAGE_TAG="frontend-${CODEBUILD_RESOLVED_SOURCE_VERSION:0:12}-${CODEBUILD_BUILD_NUMBER}"
+        IMAGE_URI="$ECR_REPOSITORY_URI:$IMAGE_TAG"
+        docker build -f Dockerfile.ecs -t "$IMAGE_URI" .
+
+        aws ecr get-login-password --region "$AWS_DEFAULT_REGION" |
+          docker login --username AWS --password-stdin "${ECR_REPOSITORY_URI%%/*}"
+        docker push "$IMAGE_URI"
+
+        printf '[{"name":"%s","imageUri":"%s"}]\n' \
+          "$ECS_CONTAINER_NAME" "$IMAGE_URI" > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
